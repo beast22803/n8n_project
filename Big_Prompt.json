@@ -1,0 +1,2664 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Modules 8-9: Final Resume + Memory\nFinal resume generated from approved data. Preferences stored for future personalization.\nBR-7 Resume Validation | BR-10/11/12 Preference Scoring | BR-3 Versioning | BR-18 Audit Log | BR-13 Summary Dashboard\n\nFIX (Issue 3): user_preferences DataTable CREATE removed. Memory consolidated to staticData only.\napplication_summary + audit_log remain in DataTable (correct).",
+        "height": 260,
+        "width": 600,
+        "color": 6
+      },
+      "id": "d92a64a0-f2b4-4f13-96ff-36777a8ed675",
+      "name": "Sticky Note - Memory",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Modules 5-7: Content Generation\nBR-1 Smart priority-based review | BR-2 Memory Retrieval | BR-9 Keyword Density\nFIX: Cover Letter + Email prompts use $node references for job/ats data.\nFIX: Merge Content Outputs is 3 inputs.\n\nFIX (Issue 1): user_id now derived from email field (if provided) with name fallback.\nThis gives stable, unique identity without requiring auth.",
+        "height": 380,
+        "width": 660,
+        "color": 5
+      },
+      "id": "cfe72b8e-de95-4172-a05e-19267a843920",
+      "name": "Sticky Note - Content",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Module 4: ATS Matching\nFIXED: ATS → App Recommendation ONLY (no dual-feed to Suggestions Engine).\nFIXED: Enrich ATS Context passes deterministic data to Suggestions Engine.\nBR-4 Deterministic Skill Match | BR-5 Experience Calc | BR-8 Dedup | BR-6 Confidence | BR-15 Recommendation",
+        "height": 260,
+        "width": 440,
+        "color": 4
+      },
+      "id": "e5b85534-fe53-4c66-8d54-aa3e160858ef",
+      "name": "Sticky Note - ATS",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Modules 2-3: Parallel Analysis\nJob and resume analyzed independently and simultaneously.\nGuard nodes catch empty/failed LLM output before merge.\n\nFIX (Issue 2): Extract Job DOCX and Extract Resume DOCX now have explicit binaryPropertyName\nset to 'jobFile' and 'resumeFile' respectively. Previously defaulted to 'data' and would fail.",
+        "height": 260,
+        "width": 480,
+        "color": 3
+      },
+      "id": "1dcf9599-55f9-4cc1-881c-e7304d042e24",
+      "name": "Sticky Note - Analysis",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Module 1: Job Input\nUpload job description PDF/DOCX/TXT and resume PDF/DOCX/TXT.\nBR-17 Input Validation — checks for empty/missing files.\n\nFIX (Issue 1): Added optional 'Email / Username' field to form.\nUsed as stable user_id if provided. Falls back to name if empty.",
+        "height": 380,
+        "width": 340,
+        "color": 2
+      },
+      "id": "e0a3357a-ac85-46f4-a093-ecbd89607b60",
+      "name": "Sticky Note - Input",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "AI Job Application Assistant",
+        "formDescription": "Upload your job description and resume to get AI-powered application materials.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Job Description",
+              "fieldType": "file",
+              "fieldName": "jobFile",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf,.txt",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Resume",
+              "fieldType": "file",
+              "fieldName": "resumeFile",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf,.docx,.txt",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email or Username (optional — used to remember your preferences across sessions)",
+              "fieldName": "user_identifier"
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "buttonLabel": "Analyze Application",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Processing your application... Results will be displayed shortly."
+            }
+          }
+        }
+      },
+      "id": "e2bf1054-175c-45b5-9603-5396e64f18f7",
+      "name": "Start Application",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -2016,
+        688
+      ],
+      "webhookId": "d2fdb648-5d22-4819-bb16-9969b0db1c56"
+    },
+    {
+      "parameters": {
+        "jsCode": "// BR-17: Input Validation\nconst data = $input.first().json;\nconst binaryData = $input.first().binary || {};\n\nconst errors = [];\n\nif (!binaryData.jobFile && !data.jobFile) {\n  errors.push('Job Description file is missing or empty.');\n}\nif (!binaryData.resumeFile && !data.resumeFile) {\n  errors.push('Resume file is missing or empty.');\n}\n\nif (errors.length > 0) {\n  throw new Error('Validation Failed: ' + errors.join(' | '));\n}\n\nreturn $input.all();"
+      },
+      "id": "866c3836-84a1-4ded-b436-c070544d27a2",
+      "name": "Validate Input Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1792,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "job-is-pdf",
+              "leftValue": "={{ $binary?.jobFile?.mimeType || $binary?.jobFile?.fileName || '' }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5ae5b8f9-2e91-48db-aaae-10b487bea536",
+      "name": "Route Job File Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -880,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "resume-is-pdf",
+              "leftValue": "={{ $binary?.resumeFile?.mimeType || $binary?.resumeFile?.fileName || '' }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d2394770-983a-4a95-8359-75b006180c91",
+      "name": "Route Resume File Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -880,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "jobFile",
+        "options": {
+          "joinPages": true,
+          "maxPages": 10
+        }
+      },
+      "id": "25ccd931-8d1d-4d41-910e-df260b621174",
+      "name": "Extract Job Description",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        288
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "resumeFile",
+        "options": {
+          "joinPages": true,
+          "maxPages": 10
+        }
+      },
+      "id": "f56ce3b9-9665-4015-9a2f-dba2b0d2ad29",
+      "name": "Extract Resume",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        864
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "job-is-docx",
+              "leftValue": "={{ $binary?.jobFile?.mimeType || $binary?.jobFile?.fileName || '' }}",
+              "rightValue": "docx",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f03f51e4-78c9-4bce-a6e9-8f5492002545",
+      "name": "Route Job DOCX Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "resume-is-docx",
+              "leftValue": "={{ $binary?.resumeFile?.mimeType || $binary?.resumeFile?.fileName || '' }}",
+              "rightValue": "docx",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1b7c023d-c1ac-4957-9565-4a4c7ac85450",
+      "name": "Route Resume DOCX Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "docx"
+      },
+      "id": "8f3b036a-a0e5-4da5-8262-226baea9244a",
+      "name": "Extract Job DOCX",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        480
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "jobFile",
+        "options": {}
+      },
+      "id": "d69d4c73-4e99-4843-9f02-345bb1b03864",
+      "name": "Extract Job TXT",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        672
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "docx"
+      },
+      "id": "2017feb2-a632-47ef-90a8-936731c6f551",
+      "name": "Extract Resume DOCX",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        1056
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "resumeFile",
+        "options": {}
+      },
+      "id": "9568dd27-313c-4b34-abd2-8b5cb9cb9fc6",
+      "name": "Extract Resume TXT",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        1248
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst raw = item.text || item.data || item.content || '';\nreturn [{ json: { text: raw } }];"
+      },
+      "id": "734429b0-6e32-4390-86ca-8fb62a6c20d2",
+      "name": "Normalize Job Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst raw = item.text || item.data || item.content || '';\nreturn [{ json: { text: raw } }];"
+      },
+      "id": "04d07419-ed3b-40a5-ae05-7e05d487c625",
+      "name": "Normalize Resume Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        1056
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Job Description Analysis Engine. Your sole function is to parse job descriptions and produce structured JSON. You do not give advice, opinions, or explanations.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT FORMAT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nReturn ONLY a single raw JSON object.\nNo markdown. No code fences. No prose. No explanations.\nThe very first character of your output must be { and the very last must be }.\nAny deviation from this will break the downstream pipeline.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREQUIRED SCHEMA (all fields mandatory)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"role\": \"string\",\n  \"job_level\": \"string\",\n  \"employment_type\": \"string\",\n  \"industry\": \"string\",\n  \"location\": \"string\",\n  \"experience_required\": \"string\",\n  \"education_required\": \"string\",\n  \"skills_required\": [\"string\"],\n  \"skills_preferred\": [\"string\"],\n  \"tools_and_technologies\": [\"string\"],\n  \"responsibilities\": [\"string\"],\n  \"keywords\": [\"string\"],\n  \"soft_skills\": [\"string\"]\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFIELD-BY-FIELD EXTRACTION RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nrole\n  → Extract the exact job title as written. Do not rephrase, abbreviate, or expand it.\n  → If multiple titles appear (e.g. \"Software Engineer / Developer\"), take the primary one.\n  → If not found: return \"\".\n\njob_level\n  → Must be exactly ONE of: \"Intern\" | \"Junior\" | \"Mid-Level\" | \"Senior\" | \"Lead\" | \"Manager\" | \"Unknown\"\n  → Infer from: years required, title keywords (\"senior\", \"lead\", \"jr\"), or responsibility scope.\n  → If unclear: return \"Unknown\". Never return a value outside this list.\n\nemployment_type\n  → Must be exactly ONE of: \"Full-Time\" | \"Part-Time\" | \"Contract\" | \"Internship\" | \"Unknown\"\n  → If unclear: return \"Unknown\". Never return a value outside this list.\n\nindustry\n  → Return the industry sector (e.g. \"FinTech\", \"E-Commerce\", \"Healthcare IT\", \"Cybersecurity\").\n  → If not explicitly stated, infer from company description or role context.\n  → If impossible to determine: return \"Unknown\".\n\nlocation\n  → Return city, country, or \"Remote\" as written. If hybrid: return \"Hybrid — [city]\".\n  → If not mentioned: return \"\".\n\nexperience_required\n  → Return the exact experience string as written (e.g. \"2+ years\", \"3-5 years\").\n  → If not mentioned: return \"\".\n\neducation_required\n  → Return the minimum degree requirement (e.g. \"Bachelor's in Computer Science\", \"Master's preferred\").\n  → If not mentioned: return \"\".\n\nskills_required\n  → Include ONLY skills described as mandatory, required, or must-have.\n  → Each item: a specific technology, language, framework, or domain skill.\n  → Deduplicate — if the same skill appears twice under different names (e.g. \"JS\" and \"JavaScript\"), keep only the canonical form.\n  → Remove generic non-skills: \"communication\", \"team player\", \"fast learner\" — these belong in soft_skills.\n  → If none: return [].\n\nskills_preferred\n  → Include ONLY skills described as preferred, nice-to-have, or a plus.\n  → Apply same deduplication and exclusion rules as skills_required.\n  → If none: return [].\n\ntools_and_technologies\n  → Extract all specific tools, frameworks, languages, platforms, databases, cloud services, and DevOps tools mentioned anywhere.\n  → Include items already in skills_required and skills_preferred if they are also tools/technologies — overlap is acceptable here.\n  → Examples: \"Git\", \"Docker\", \"PostgreSQL\", \"AWS\", \"Figma\", \"Jest\", \"GitHub Actions\".\n  → If none: return [].\n\nresponsibilities\n  → Extract 5–10 concise bullet-style responsibilities as strings.\n  → Use the original wording from the JD — do not rephrase.\n  → Start each with an action verb (e.g. \"Build\", \"Maintain\", \"Design\").\n  → If fewer than 5 are explicitly stated, extract all available ones.\n  → If none found: return [].\n\nkeywords\n  → ATS-critical terms: technologies, methodologies, certifications, domain terms, product names.\n  → Exclude filler words: \"experienced\", \"motivated\", \"passionate\", \"team player\".\n  → Keywords must be specific enough to distinguish this role from others.\n  → Include terms from skills_required, skills_preferred, and tools_and_technologies that are ATS-relevant.\n  → Deduplicate.\n  → Minimum 5 keywords. Maximum 20.\n  → If fewer than 5 extractable: return all found, even if under 5.\n\nsoft_skills\n  → Include interpersonal and cognitive skills: \"communication\", \"leadership\", \"problem solving\", \"attention to detail\", etc.\n  → Only include if explicitly mentioned in the job description.\n  → If none: return [].\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTRICT PROHIBITIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Do NOT invent requirements not present in the job description.\n- Do NOT add commentary, notes, or warnings inside the JSON.\n- Do NOT use null for any field — use \"\" for empty strings and [] for empty arrays.\n- Do NOT nest objects beyond the schema above.\n- Do NOT return partial JSON.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nJOB DESCRIPTION INPUT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{{ $json.text }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "085e3dee-ec99-4e1a-9e11-1bbf6cc4b162",
+      "name": "Job Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        16,
+        480
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3.1",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3.1"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "0217297c-034c-4345-b2b4-a2b9c1c31a6f",
+      "name": "OpenAI Model - Job Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        704
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "x5QkreDilHObB97X",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"role\":\"Frontend Developer\",\"skills_required\":[\"React\",\"TypeScript\",\"REST APIs\"],\"experience_required\":\"2+ years\",\"keywords\":[\"React\",\"TypeScript\",\"Frontend Development\",\"REST APIs\"]}"
+      },
+      "id": "30273e4a-e766-47d8-a8a7-32113d71389a",
+      "name": "Job Structure Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FAILURE PATH GUARD — Job Analyzer\nconst item = $input.first().json;\n\nconst role            = item.role            || (item.output && item.output.role)            || null;\nconst skills_required = item.skills_required || (item.output && item.output.skills_required) || null;\n\nif (!role || !skills_required || !Array.isArray(skills_required) || skills_required.length === 0) {\n  throw new Error(\n    'Job Analyzer produced invalid output. ' +\n    'role=' + JSON.stringify(role) + ' ' +\n    'skills_required=' + JSON.stringify(skills_required) + '. ' +\n    'Check that the job description file extracted correctly and the LLM returned valid JSON.'\n  );\n}\n\nreturn [{ json: item }];"
+      },
+      "id": "4bb3082e-78dd-45f7-91c4-fac1ad026f0f",
+      "name": "Guard Job Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Resume Analysis Engine. Your sole function is to parse resumes and produce structured JSON candidate data. You do not give advice, opinions, or explanations.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT FORMAT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nReturn ONLY a single raw JSON object.\nNo markdown. No code fences. No prose. No explanations.\nThe very first character of your output must be { and the very last must be }.\nAny deviation from this will break the downstream pipeline.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREQUIRED SCHEMA (all fields mandatory)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"name\": \"string\",\n  \"email\": \"string\",\n  \"phone\": \"string\",\n  \"location\": \"string\",\n  \"linkedin\": \"string\",\n  \"portfolio\": \"string\",\n  \"summary\": \"string\",\n  \"skills\": [\"string\"],\n  \"experience\": [\n    {\n      \"title\": \"string\",\n      \"company\": \"string\",\n      \"start\": \"string\",\n      \"end\": \"string\",\n      \"description\": \"string\"\n    }\n  ],\n  \"projects\": [\n    {\n      \"name\": \"string\",\n      \"technologies\": [\"string\"],\n      \"description\": \"string\"\n    }\n  ],\n  \"education\": [\n    {\n      \"degree\": \"string\",\n      \"institution\": \"string\",\n      \"year\": \"string\"\n    }\n  ],\n  \"certifications\": [\"string\"],\n  \"languages\": [\"string\"]\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFIELD-BY-FIELD EXTRACTION RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nname\n  → Full name as written. Do not split into first/last.\n  → If not found: return \"\".\n\nemail\n  → Extract the email address verbatim.\n  → If not found: return \"\".\n\nphone\n  → Extract the phone number verbatim including country code if present.\n  → If not found: return \"\".\n\nlocation\n  → City and/or country as written. If both present: \"City, Country\".\n  → If not found: return \"\".\n\nlinkedin\n  → Full LinkedIn URL or just the profile handle — as written.\n  → If not found: return \"\".\n\nportfolio\n  → GitHub, personal website, or portfolio URL — as written.\n  → If not found: return \"\".\n\nsummary\n  → If the resume has a summary/profile/objective section, extract it verbatim.\n  → Trim whitespace but do not rephrase.\n  → If not present: return \"\".\n\nskills\n  → Extract only technical and professional skills explicitly listed.\n  → NEVER infer skills from job titles or descriptions (e.g. do not add \"React\" because someone worked at a React company).\n  → Each item must be a specific technology, language, framework, tool, or professional skill.\n  → Remove vague entries: \"hard-working\", \"fast learner\", \"communication\" — these are not skills.\n  → Deduplicate: if \"JavaScript\" and \"JS\" both appear, keep \"JavaScript\".\n  → If not found: return [].\n\nexperience (array of objects)\n  → Extract every role listed in the resume — do not skip any.\n  → title: exact job title as written.\n  → company: exact company name as written.\n  → start: date as written (e.g. \"07/2023\", \"Jan 2023\", \"2023\"). If missing: return \"\".\n  → end: date as written. If current/ongoing: return \"Present\". If missing: return \"\".\n  → description: concise summary (2-4 sentences) of the role's responsibilities and achievements using the resume's own language. Do not invent metrics or outcomes.\n  → If no experience listed: return [].\n\nprojects (array of objects)\n  → Extract only projects explicitly listed in the resume.\n  → name: project name as written.\n  → technologies: list of technologies explicitly mentioned for this project.\n  → description: 1-2 sentence summary using the resume's own language. No inventions.\n  → If no projects listed: return [].\n\neducation (array of objects)\n  → Extract all education entries.\n  → degree: full degree name as written (e.g. \"B.E. Computer Science & Engineering\").\n  → institution: university or college name as written.\n  → year: graduation year or date range as written. If not found: return \"\".\n  → If no education listed: return [].\n\ncertifications\n  → List all certifications explicitly named.\n  → Format: \"Certification Name — Issuing Body\" if both are present.\n  → If none: return [].\n\nlanguages\n  → List all spoken/written languages explicitly mentioned.\n  → If none: return [].\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTRICT PROHIBITIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Do NOT infer skills from job titles, company names, or project contexts.\n- Do NOT create experience entries not present in the resume.\n- Do NOT create projects not present in the resume.\n- Do NOT fabricate dates, metrics, or achievement numbers.\n- Do NOT use null for any field — use \"\" for strings and [] for arrays.\n- Do NOT add commentary or notes inside the JSON.\n- Do NOT return partial JSON.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nRESUME INPUT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{{ $json.text }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "ee9c14c2-93d5-4b95-a308-d692050daa4a",
+      "name": "Resume Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        16,
+        1056
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3.1",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3.1"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "c49a6c90-5c39-419a-bcf7-d01b99526fd5",
+      "name": "OpenAI Model - Resume Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        1280
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "x5QkreDilHObB97X",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"name\":\"Varshit Madisetti\",\"skills\":[\"React\",\"TypeScript\",\"Node.js\",\"JavaScript\"],\"experience\":[{\"title\":\"Full Stack Developer\",\"company\":\"Fresh Prints\",\"start\":\"07/2023\",\"end\":\"12/2024\",\"description\":\"Built React apps\"}],\"projects\":[\"Colorization Transformer\",\"Zero-Day Attack Detection\"],\"education\":[]}"
+      },
+      "id": "40b52265-d1fb-42d8-a697-11693308d95a",
+      "name": "Resume Structure Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FAILURE PATH GUARD — Resume Analyzer\nconst item = $input.first().json;\n\nconst name   = item.name   || (item.output && item.output.name)   || null;\nconst skills = item.skills || (item.output && item.output.skills) || null;\n\nif (!name || !skills || !Array.isArray(skills) || skills.length === 0) {\n  throw new Error(\n    'Resume Analyzer produced invalid output. ' +\n    'name=' + JSON.stringify(name) + ' ' +\n    'skills=' + JSON.stringify(skills) + '. ' +\n    'Check that the resume file extracted correctly and the LLM returned valid JSON.'\n  );\n}\n\nreturn [{ json: item }];"
+      },
+      "id": "5cc361c4-c16f-4daa-a06d-5a6171481574",
+      "name": "Guard Resume Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        1056
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "30a0f77f-659c-4837-b583-8ea756c47bdf",
+      "name": "Combine Job & Resume Analysis",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        592,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// BR-4: Deterministic Skill Matching\n// BR-5: Experience Calculation Engine\n// BR-5b: Deterministic Experience Match Score\n// BR-8: Duplicate Detection\n// BR-9: Keyword Density Check\n\nconst items = $input.all();\nconst data  = items[0].json;\n\nlet job = {\n  role:                data.role                || (data.output && data.output.role)                || '',\n  skills_required:     data.skills_required     || (data.output && data.output.skills_required)     || [],\n  experience_required: data.experience_required || (data.output && data.output.experience_required) || '',\n  keywords:            data.keywords            || (data.output && data.output.keywords)            || []\n};\n\nlet resume = {\n  name:       data.name       || (data.output && data.output.name)       || '',\n  skills:     data.skills     || (data.output && data.output.skills)     || [],\n  experience: data.experience || (data.output && data.output.experience) || [],\n  projects:   data.projects   || (data.output && data.output.projects)   || [],\n  education:  data.education  || (data.output && data.output.education)  || []\n};\n\n// BR-8: Deduplicate resume skills\nconst rawSkills  = resume.skills || [];\nconst seenSkills = new Set();\nconst deduplicatedSkills = [];\nfor (const skill of rawSkills) {\n  const normalized = String(skill).toLowerCase().replace(/[^a-z0-9]/g, '');\n  if (!seenSkills.has(normalized)) {\n    seenSkills.add(normalized);\n    deduplicatedSkills.push(skill);\n  }\n}\nresume.skills = deduplicatedSkills;\n\n// BR-4: Deterministic skill matching\nconst requiredSkills  = (job.skills_required || []).map(s => String(s).toLowerCase().trim());\nconst candidateSkills = deduplicatedSkills.map(s => String(s).toLowerCase().trim());\n\nconst matchedSkills = [];\nconst missingSkills = [];\n\nfor (const req of requiredSkills) {\n  const reqNorm = req.replace(/[^a-z0-9]/g, '');\n  const found = candidateSkills.some(cs => {\n    const csNorm = cs.replace(/[^a-z0-9]/g, '');\n    return cs === req || cs.includes(req) || req.includes(cs) || csNorm === reqNorm;\n  });\n  if (found) {\n    matchedSkills.push(req);\n  } else {\n    missingSkills.push(req);\n  }\n}\n\nconst deterministicSkillScore = requiredSkills.length > 0\n  ? Math.round((matchedSkills.length / requiredSkills.length) * 100)\n  : 0;\n\n// BR-5: Experience Calculation\nfunction parseExperienceMonths(expArray) {\n  let totalMonths = 0;\n  for (const exp of (expArray || [])) {\n    const startStr = String(exp.start || exp.startDate || '').toLowerCase().trim();\n    const endStr   = String(exp.end   || exp.endDate   || 'present').toLowerCase().trim();\n\n    const parseDate = (str) => {\n      if (!str || str === '') return null;\n      if (str === 'present' || str === 'current' || str === 'now') return new Date();\n      const mmyyyy   = str.match(/(\\d{1,2})\\/(\\d{4})/);\n      if (mmyyyy) return new Date(parseInt(mmyyyy[2]), parseInt(mmyyyy[1]) - 1);\n      const monthYear = str.match(/([a-z]+)\\s+(\\d{4})/i);\n      if (monthYear) { const d = new Date(str); if (!isNaN(d)) return d; }\n      const yyyy = str.match(/\\b(\\d{4})\\b/);\n      if (yyyy) return new Date(parseInt(yyyy[1]), 0);\n      return null;\n    };\n\n    const startDate = parseDate(startStr);\n    const endDate   = parseDate(endStr);\n\n    if (startDate && endDate && !isNaN(startDate) && !isNaN(endDate)) {\n      const months = (endDate.getFullYear() - startDate.getFullYear()) * 12\n                   + (endDate.getMonth() - startDate.getMonth());\n      if (months > 0) totalMonths += months;\n    }\n  }\n  return totalMonths;\n}\n\nconst totalExperienceMonths = parseExperienceMonths(resume.experience);\nconst totalExperienceYears  = parseFloat((totalExperienceMonths / 12).toFixed(1));\n\nconst expRequiredMatch = String(job.experience_required || '').match(/(\\d+)/);\nconst requiredYears    = expRequiredMatch ? parseInt(expRequiredMatch[1]) : 0;\nconst experienceMet    = totalExperienceYears >= requiredYears;\n\n// BR-5b: Deterministic experience_match score\nlet experienceMatchScore;\nif (requiredYears === 0) {\n  experienceMatchScore = 85;\n} else {\n  const ratio = totalExperienceYears / requiredYears;\n  if (ratio >= 1.5)      experienceMatchScore = 95;\n  else if (ratio >= 1.0) experienceMatchScore = 85;\n  else if (ratio >= 0.8) experienceMatchScore = 72;\n  else if (ratio >= 0.6) experienceMatchScore = 60;\n  else if (ratio >= 0.4) experienceMatchScore = 45;\n  else                   experienceMatchScore = 30;\n}\n\n// BR-9: Keyword Density Check\nconst keywords   = job.keywords && job.keywords.length > 0 ? job.keywords : job.skills_required || [];\nconst resumeText = JSON.stringify(resume).toLowerCase();\nconst keywordDensity = {};\nfor (const kw of keywords) {\n  const kwLower  = String(kw).toLowerCase();\n  const escaped  = kwLower.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n  const matches  = resumeText.match(new RegExp(escaped, 'g')) || [];\n  keywordDensity[kw] = matches.length;\n}\nconst lowDensityKeywords = keywords.filter(kw => (keywordDensity[kw] || 0) < 2);\n\nreturn [{\n  json: {\n    job,\n    resume,\n    deterministic: {\n      matchedSkills,\n      missingSkills,\n      skillScore:           deterministicSkillScore,\n      totalExperienceMonths,\n      totalExperienceYears,\n      requiredYears,\n      experienceMet,\n      experienceMatchScore,\n      keywordDensity,\n      lowDensityKeywords\n    }\n  }\n}];"
+      },
+      "id": "a9025b2a-833a-4903-a46d-c6d00a0fabe0",
+      "name": "Skill & Experience Analyzer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "job",
+              "value": "={{ $json.job }}",
+              "type": "json"
+            },
+            {
+              "id": "2",
+              "name": "resume",
+              "value": "={{ $json.resume }}",
+              "type": "json"
+            },
+            {
+              "id": "3",
+              "name": "deterministic",
+              "value": "={{ $json.deterministic }}",
+              "type": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07c1bf23-4c23-4bea-ac9b-dac6292e32cf",
+      "name": "Prepare Analysis Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1904,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an ATS (Applicant Tracking System) Scoring Engine. Your sole function is to compute a match score between a job and a candidate resume using the rules below. You do not give career advice or suggestions.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT FORMAT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nReturn ONLY a single raw JSON object.\nNo markdown. No code fences. No prose. No explanations.\nThe very first character of your output must be { and the very last must be }.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREQUIRED SCHEMA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"final_score\": integer (0–100),\n  \"breakdown\": {\n    \"skill_match\": integer (0–100),\n    \"experience_match\": integer (0–100),\n    \"semantic_match\": integer (0–100),\n    \"formatting\": integer (0–100)\n  },\n  \"missing_skills\": [\"string\"],\n  \"matched_skills\": [\"string\"],\n  \"summary\": \"string\",\n  \"confidence\": integer (0–100)\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nDETERMINISTIC INPUT (GROUND TRUTH — DO NOT OVERRIDE)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThe following values have been pre-computed deterministically by a code engine.\nYou MUST use them exactly. Do not recalculate. Do not adjust. Do not round differently.\n\n{{ JSON.stringify($json.deterministic, null, 2) }}\n\nKey fields you must use verbatim:\n  skill_match     = deterministicSkillScore   (already 0–100 integer)\n  experience_match = experienceMatchScore     (already 0–100 integer)\n  matched_skills  = matchedSkills             (use this list exactly)\n  missing_skills  = missingSkills             (use this list exactly)\n  penalty_count   = missingSkills.length      (subtract 5 per entry from final_score)\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nJOB DATA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{{ JSON.stringify($json.job, null, 2) }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nRESUME DATA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{{ JSON.stringify($json.resume, null, 2) }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSCORING RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nSTEP 1 — Fill in pre-computed values (do not change these):\n  breakdown.skill_match      = deterministicSkillScore\n  breakdown.experience_match = experienceMatchScore\n\nSTEP 2 — Compute semantic_match (YOUR calculation, 0–100):\n  This measures meaning-based alignment NOT already counted in skill_match.\n  Consider:\n    - Domain relevance: does the candidate's background match the industry/domain of the role?\n    - Transferable competencies: does experience description demonstrate relevant practices?\n    - Project relevance: do projects demonstrate applied use of job-relevant concepts?\n  Scoring guide:\n    90–100: Candidate background is directly domain-aligned with strong evidence\n    70–89:  Candidate background is adjacent with clear transferable elements\n    50–69:  Candidate background is partially relevant with limited direct evidence\n    30–49:  Candidate background is weakly relevant, mostly indirect\n    0–29:   No meaningful semantic alignment found\n  STRICT: Do NOT count skills already in matched_skills again here.\n\nSTEP 3 — Compute formatting (YOUR calculation, 0–100):\n  Assess the structural quality of the resume as a document:\n    95:  All sections present (header, summary, skills, experience, projects, education), dates consistent, clean hierarchy\n    90:  Most sections present, minor inconsistencies\n    85:  Core sections present but sparse or inconsistent\n    75:  Missing key sections or poor structure\n    60:  Severely unstructured, hard to parse\n  STRICT: Score the resume as provided — do not assume ideal formatting.\n\nSTEP 4 — Compute penalty:\n  penalty = missingSkills.length × 5\n  Cap: penalty cannot make final_score below 0.\n\nSTEP 5 — Compute final_score using this EXACT formula:\n  final_score = round( (skill_match × 0.40) + (experience_match × 0.30) + (semantic_match × 0.20) + (formatting × 0.10) - penalty )\n  Then clamp: if final_score < 0 → set to 0. If final_score > 100 → set to 100.\n  final_score MUST be a whole integer. No decimals.\n\nWORKED EXAMPLE (for formula verification only — do not use these numbers):\n  skill_match=80, experience_match=72, semantic_match=65, formatting=90, missing=2\n  = round((80×0.4)+(72×0.3)+(65×0.2)+(90×0.1) - (2×5))\n  = round(32 + 21.6 + 13 + 9 - 10)\n  = round(65.6)\n  = 66\n\nSTEP 6 — Compute confidence (YOUR calculation, 0–100):\n  How certain are you that the ATS output reflects the true match quality?\n  Scoring guide:\n    90–99: All required skills are explicitly present in the resume text — no inference needed\n    70–89: Most required skills are explicit; 1–2 required an inference or synonym match\n    50–69: Several required skills required inference; experience dates were ambiguous\n    30–49: Many skills inferred; resume was sparse or poorly structured\n    0–29:  High uncertainty — resume text was too vague to score reliably\n\nSTEP 7 — Write summary (YOUR calculation, 1–2 sentences):\n  A factual, neutral assessment of the match.\n  Mention: the skill match percentage, whether experience requirement is met, and the most critical gap if any.\n  Do NOT give advice. Do NOT say \"you should\". Be descriptive only.\n  Example: \"The candidate matches 3 of 4 required skills and meets the 2-year experience threshold, with REST APIs as the only missing required skill.\"\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTRICT PROHIBITIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Do NOT recalculate skill_match or experience_match — use the pre-computed values exactly.\n- Do NOT modify the matched_skills or missing_skills lists.\n- Do NOT return decimal scores — all scores must be whole integers.\n- Do NOT use null for any field.\n- Do NOT add career advice, suggestions, or explanations inside the JSON.\n- Do NOT return partial JSON.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "66c60959-624c-4865-8060-d89b2ffd64f2",
+      "name": "ATS Matching Engine",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1040,
+        496
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3.1",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3.1"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "00508dac-15fc-44f6-963a-a3181215f0e7",
+      "name": "OpenAI Model - ATS Matcher",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1056,
+        720
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "x5QkreDilHObB97X",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"final_score\":78,\"breakdown\":{\"skill_match\":80,\"experience_match\":70,\"semantic_match\":75,\"formatting\":90},\"missing_skills\":[\"REST APIs\"],\"matched_skills\":[\"React\",\"TypeScript\"],\"summary\":\"Good skill match with minor experience gap.\",\"confidence\":85}"
+      },
+      "id": "4c9c9573-eb7c-4581-a2a3-6f58726912d7",
+      "name": "ATS Score Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// BR-15: Application Recommendation\nconst item = $input.first().json;\nconst atsOutput = item.output || {};\nconst score = atsOutput.final_score || 0;\n\nlet verdict = '';\nlet verdictReason = '';\n\nif (score >= 90) {\n  verdict = 'Strong Apply';\n  verdictReason = 'Excellent match. Your skills and experience align strongly with this role.';\n} else if (score >= 75) {\n  verdict = 'Apply';\n  verdictReason = 'Good match. Minor gaps exist but overall profile is competitive.';\n} else if (score >= 60) {\n  verdict = 'Apply with Resume Changes';\n  verdictReason = 'Moderate match. Address missing skills before applying.';\n} else {\n  verdict = 'Skip';\n  verdictReason = 'Low match. Significant skill or experience gaps detected.';\n}\n\nreturn [{\n  json: {\n    ...item,\n    verdict,\n    verdictReason\n  }\n}];"
+      },
+      "id": "c5d6fbc7-9ecf-4721-ae02-8542bbdd42e0",
+      "name": "Application Recommendation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "json"
+            },
+            {
+              "id": "2",
+              "name": "deterministic",
+              "value": "={{ $node[\"Skill & Experience Analyzer\"].json.deterministic }}",
+              "type": "json"
+            },
+            {
+              "id": "3",
+              "name": "verdict",
+              "value": "={{ $json.verdict }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "verdictReason",
+              "value": "={{ $json.verdictReason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a950899e-b3cb-4d8b-b40c-8f59d91a98ba",
+      "name": "Enrich ATS Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Resume Improvement Advisor. Your sole function is to generate specific, actionable resume improvement suggestions based on ATS analysis output. You do not rewrite resumes. You do not generate cover letters.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT FORMAT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nReturn ONLY a single raw JSON object.\nNo markdown. No code fences. No prose. No explanations.\nThe very first character of your output must be { and the very last must be }.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREQUIRED SCHEMA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"resume_suggestions\": [\n    {\n      \"text\": \"string\",\n      \"priority\": \"high\" | \"medium\" | \"low\",\n      \"category\": \"skills\" | \"experience\" | \"keywords\" | \"formatting\" | \"projects\"\n    }\n  ]\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINPUT DATA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nATS Score Result:\n{{ JSON.stringify($json.output, null, 2) }}\n\nDeterministic Analysis:\n{{ JSON.stringify($json.deterministic, null, 2) }}\n\nApplication Verdict: {{ $json.verdict }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSUGGESTION GENERATION RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nQUANTITY: Generate exactly 5–8 suggestions. No fewer. No more.\n\nMANDATORY SUGGESTIONS (generate these first):\n  For each skill in missingSkills (from deterministic data):\n    → Create one HIGH priority suggestion, category: \"skills\"\n    → Template: \"Add [SKILL] to your Skills section. If you have used [SKILL] in any project or role, describe it explicitly. If not, note it as a learning goal or in-progress skill.\"\n\n  For each keyword in lowDensityKeywords (from deterministic data, keywords appearing fewer than 2 times):\n    → Create one MEDIUM priority suggestion, category: \"keywords\"\n    → Template: \"Increase the frequency of '[KEYWORD]' in your resume. Use it in your summary, skills section, and at least one experience bullet point where it is truthfully applicable.\"\n\nCONDITIONAL SUGGESTIONS (generate these after mandatory ones, until you reach 5–8 total):\n  If experience_match < 80 and requiredYears > 0:\n    → Create one suggestion, category: \"experience\", priority based on gap:\n      - gap > 1 year: HIGH\n      - gap 6–12 months: MEDIUM\n      - gap < 6 months: LOW\n    → Template: \"Your resume reflects [totalExperienceYears] years of experience. The role requires [requiredYears]+ years. Reframe existing roles to emphasise depth of ownership, scope of impact, and technical complexity — without inventing new experience.\"\n\n  If formatting score < 85:\n    → Create one LOW priority suggestion, category: \"formatting\"\n    → Template: \"Improve resume structure. Ensure all standard sections are present (Summary, Skills, Experience, Projects, Education) and use consistent date formatting (MM/YYYY) across all roles.\"\n\n  If any project is missing from resume but the job keywords strongly imply project experience is expected:\n    → Create one MEDIUM priority suggestion, category: \"projects\"\n    → Template: \"Add a Projects section demonstrating hands-on use of [RELEVANT_TECHNOLOGY]. Even personal or open-source projects count. Describe the tech stack, your role, and a measurable outcome.\"\n\n  If matched_skills are present but not emphasised early in the resume:\n    → Create one LOW priority suggestion, category: \"skills\"\n    → Template: \"Reorder your Skills section to list your strongest matches first: [MATCHED_SKILLS_LIST]. ATS systems and recruiters weight the top of the list more heavily.\"\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nQUALITY RULES FOR EACH SUGGESTION TEXT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Each \"text\" must be 20–60 words.\n- Each \"text\" must name the specific skill, keyword, or section it refers to — no generic phrases like \"improve your resume\" or \"add more skills\".\n- Each \"text\" must be actionable: tell the candidate exactly WHAT to change and WHERE in the resume.\n- Do NOT suggest fabricating experience, metrics, or skills the candidate does not have.\n- Do NOT give vague advice: \"strengthen your summary\" is NOT acceptable without specifying what to add.\n- Do NOT repeat the same suggestion twice in different words.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPRIORITY ASSIGNMENT RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  high:   Missing required skill | Large experience gap | Critical ATS keyword absent\n  medium: Low-density keyword | Moderate experience gap | Relevant missing project\n  low:    Formatting improvement | Skill reordering | Optional section missing\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTRICT PROHIBITIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Do NOT suggest the candidate lie, exaggerate, or invent experience.\n- Do NOT produce fewer than 5 or more than 8 suggestions.\n- Do NOT use null for any field.\n- Do NOT add outer keys beyond \"resume_suggestions\".\n- Do NOT return partial JSON.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "f6615b6a-3d31-48ab-8063-c1b3e64b4222",
+      "name": "Suggestions Engine",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1840,
+        384
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3.1",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "ef187b87-20d7-4a2f-ab25-8b2bca103b77",
+      "name": "OpenAI Model - Suggestions",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1856,
+        608
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "x5QkreDilHObB97X",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"resume_suggestions\":[{\"text\":\"string\",\"priority\":\"string\",\"category\":\"string\"}]}"
+      },
+      "id": "1b9cd967-783f-4786-b6b5-a9fc5598e15c",
+      "name": "Suggestions Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1984,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "65a2daa7-08af-4d9e-b551-b28ab86bba3f",
+      "name": "Merge Analysis + Suggestions",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2192,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "job",
+              "value": "={{ $node[\"Prepare Analysis Payload\"].json.job }}",
+              "type": "json"
+            },
+            {
+              "id": "2",
+              "name": "resume",
+              "value": "={{ $node[\"Prepare Analysis Payload\"].json.resume }}",
+              "type": "json"
+            },
+            {
+              "id": "3",
+              "name": "deterministic",
+              "value": "={{ $node[\"Prepare Analysis Payload\"].json.deterministic }}",
+              "type": "json"
+            },
+            {
+              "id": "4",
+              "name": "ats",
+              "value": "={{ $node[\"ATS Matching Engine\"].json.output }}",
+              "type": "json"
+            },
+            {
+              "id": "5",
+              "name": "suggestions",
+              "value": "={{ $node[\"Suggestions Engine\"].json.output.resume_suggestions }}",
+              "type": "json"
+            },
+            {
+              "id": "6",
+              "name": "verdict",
+              "value": "={{ $node[\"Application Recommendation\"].json.verdict }}",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "verdictReason",
+              "value": "={{ $node[\"Application Recommendation\"].json.verdictReason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ecfaeea5-be5f-4881-8982-0c2dd9ae739d",
+      "name": "Prepare Generation Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2416,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// BR-2: Memory Retrieval\n// FIX (Issue 1): user_id resolution priority:\n//   1. user_identifier form field (email or username entered by user) — most stable\n//   2. Candidate name from resume (lowercased, spaces→underscores) — fallback\n//   3. 'unknown_user' — last resort\n//\n// This solves the name-collision problem (two 'John Smith' users enter different emails)\n// and the instability problem (same user returning gets their history if they use same email).\n// Limitation: if user doesn't fill in email, name-based ID is still used (acceptable for portfolio).\n\nconst genPayload = $node['Prepare Generation Payload'].json;\nconst resumeName = genPayload.resume.name || '';\n\n// Pull user_identifier from the form submission (flows through binary/json)\n// It was submitted in Start Application but not explicitly passed forward in set nodes.\n// We read it directly from the trigger via $execution context — not available.\n// Instead: it is present in the n8n execution data on the trigger node.\n// Safest approach: read from $node['Start Application'] which is accessible via node reference.\nlet rawIdentifier = '';\ntry {\n  rawIdentifier = $node['Start Application'].json.user_identifier || '';\n} catch(e) {\n  rawIdentifier = '';\n}\n\n// Normalise: lowercase, trim, replace spaces with underscores, strip non-alphanumeric\nconst normalise = (s) => String(s).toLowerCase().trim().replace(/\\s+/g, '_').replace(/[^a-z0-9_.@-]/g, '');\n\nconst USER_ID = rawIdentifier\n  ? normalise(rawIdentifier)\n  : (resumeName ? normalise(resumeName) : 'unknown_user');\n\nconst staticData = $getWorkflowStaticData('global');\nconst allRecords = staticData.user_preferences || [];\n\nconst userRecords = allRecords\n  .filter(r => r.user_id === USER_ID)\n  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));\n\nconst latest = userRecords.length > 0 ? userRecords[0] : null;\n\nreturn [{\n  json: {\n    ...(latest || {}),\n    _resolved_user_id: USER_ID\n  }\n}];"
+      },
+      "id": "0cf3e422-6e02-4205-b033-00965c254961",
+      "name": "Load User Memory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        496
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// BR-1: Smart Review Processor\n// Priority rules (deterministic, not user-driven):\n//   HIGH   → always accepted\n//   MEDIUM → top 2 accepted, rest rejected\n//   LOW    → always rejected\n//\n// BR-2: Reads memory context from Load User Memory output\n\nconst suggestions = $node['Prepare Generation Payload'].json.suggestions || [];\n\nconst highPriority   = suggestions.filter(s => (s.priority || '').toLowerCase() === 'high');\nconst mediumPriority = suggestions.filter(s => (s.priority || '').toLowerCase() === 'medium');\nconst lowPriority    = suggestions.filter(s => (s.priority || '').toLowerCase() === 'low');\n\nconst acceptedSuggestions = [\n  ...highPriority,\n  ...mediumPriority.slice(0, 2)\n];\nconst rejectedSuggestions = [\n  ...mediumPriority.slice(2),\n  ...lowPriority\n];\n\n// Read memory from Load User Memory output\nlet pastMemory = null;\ntry {\n  const memItems = $input.all();\n  if (memItems && memItems.length > 0 && memItems[0].json && memItems[0].json.user_id) {\n    pastMemory = memItems[0].json;\n  }\n} catch(e) {}\n\nconst parseStoredArray = (value) => {\n  if (Array.isArray(value)) return value;\n  if (typeof value === 'string') {\n    try { const p = JSON.parse(value || '[]'); return Array.isArray(p) ? p : []; } catch(e) { return []; }\n  }\n  return [];\n};\n\nconst memoryContext = pastMemory ? {\n  past_accepted:     parseStoredArray(pastMemory.accepted_suggestions),\n  past_rejected:     parseStoredArray(pastMemory.rejected_suggestions),\n  past_ats_score:    pastMemory.ats_score  || null,\n  past_job_role:     pastMemory.job_role   || null,\n  preference_scores: (() => {\n    try { return JSON.parse(pastMemory.preference_scores || '{}'); } catch(e) { return {}; }\n  })(),\n  resume_version: (pastMemory.resume_version || 0) + 1\n} : {\n  past_accepted:     [],\n  past_rejected:     [],\n  past_ats_score:    null,\n  past_job_role:     null,\n  preference_scores: {},\n  resume_version:    1\n};\n\nreturn [{\n  json: {\n    accepted_suggestions: acceptedSuggestions,\n    rejected_suggestions: rejectedSuggestions,\n    memory_context:       memoryContext\n  }\n}];"
+      },
+      "id": "faf1dfa5-d846-4d84-9941-c00f03c5cbce",
+      "name": "Smart Review Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "id": "7c5caef3-ea53-454c-a2f2-5edcaeb17818",
+      "name": "Merge Content Outputs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3664,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Professional Cover Letter Writer. Your sole function is to produce a tailored, authentic cover letter. You do not produce JSON. You do not give advice. You output only the cover letter text.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINPUT DATA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nJob Information:\n{{ JSON.stringify($node[\"Prepare Generation Payload\"].json.job, null, 2) }}\n\nCandidate Information:\n{{ JSON.stringify($node[\"Prepare Generation Payload\"].json.resume, null, 2) }}\n\nATS Match Information:\n{{ JSON.stringify($node[\"Prepare Generation Payload\"].json.ats, null, 2) }}\n\nMemory Preferences (apply these if relevant):\n{{ JSON.stringify($node[\"Smart Review Processor\"].json.memory_context, null, 2) }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nLETTER STRUCTURE (follow exactly)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPARAGRAPH 1 — Opening (2–3 sentences):\n  State the role being applied for and the company name (if available from job data).\n  State the candidate's most relevant qualification or strongest matched skill.\n  Do NOT use \"I am writing to apply for...\" — it is clichéd. Open with a direct, confident statement.\n  Example opening: \"As a full-stack developer with 1.5 years of production experience in Angular and TypeScript, I am applying for the Frontend Developer position at [Company].\"\n\nPARAGRAPH 2 — Evidence (4–5 sentences):\n  Connect the candidate's actual experience to the role's specific requirements.\n  Mention at least 2 skills from matched_skills and link them to real experience entries.\n  Reference at least 1 specific project or achievement from the resume.\n  Quantify impact only if a metric is explicitly stated in the resume — do NOT invent numbers.\n  Do NOT mention skills the candidate does not have.\n\nPARAGRAPH 3 — Fit and Motivation (2–3 sentences):\n  Explain why this specific role or company aligns with the candidate's direction.\n  Base this on the job description content (role, responsibilities, industry).\n  Do NOT make generic statements like \"I am a fast learner\" or \"I am passionate about technology\".\n\nPARAGRAPH 4 — Closing (1–2 sentences):\n  Express availability for interview.\n  Professional sign-off.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nLENGTH AND TONE RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Total length: 150–180 words. Count carefully. Do not go over 180 or under 150.\n- Tone: professional, direct, confident. No flattery. No filler.\n- Person: first-person singular (\"I\", \"my\"). Never \"we\".\n- Tense: past tense for completed roles, present tense for current role.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTRICT PROHIBITIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Do NOT invent job titles, companies, dates, projects, or skills not in the resume.\n- Do NOT invent metrics or achievement numbers not explicitly stated in the resume.\n- Do NOT include a subject line or email header — output body text only.\n- Do NOT use these banned phrases: \"I am writing to apply\", \"I am a passionate\", \"I am a fast learner\", \"I would be a great fit\", \"I am excited to\", \"Please find attached\", \"To whom it may concern\".\n- Do NOT add JSON, markdown, or formatting — plain paragraphs only.\n- Do NOT exceed 180 words.",
+        "batching": {}
+      },
+      "id": "0fd21c12-ddf7-48e1-b813-ff9d0d70c569",
+      "name": "Cover Letter Generator",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3088,
+        512
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3.1",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "31008a59-31b8-498f-8ce6-e5777553b1de",
+      "name": "OpenAI Model - Cover Letter",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3168,
+        736
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "x5QkreDilHObB97X",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "cover_letter",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1dd2ea58-5cc7-4b9e-9177-987bb16ce414",
+      "name": "Map Cover Letter Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3440,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Professional Recruiter Outreach Email Writer. Your sole function is to write a concise, direct email for a job application. You do not produce JSON. You do not give advice. You output only the email text.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINPUT DATA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCandidate:\n{{ JSON.stringify($node[\"Prepare Generation Payload\"].json.resume, null, 2) }}\n\nJob:\n{{ JSON.stringify($node[\"Prepare Generation Payload\"].json.job, null, 2) }}\n\nATS Result:\n{{ JSON.stringify($node[\"Prepare Generation Payload\"].json.ats, null, 2) }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEMAIL STRUCTURE (follow exactly)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nLINE 1 — Subject line (mandatory):\n  Format: Subject: Application for [exact job role] — [Candidate Full Name]\n  Example: Subject: Application for Frontend Developer — Varshit Madisetti\n  Do NOT deviate from this format.\n\nLINE 2 — Blank line (mandatory separator between subject and body).\n\nPARAGRAPH 1 — Introduction (1–2 sentences):\n  State the candidate's name, the role they are applying for, and their most relevant qualification.\n  Be direct. No pleasantries.\n  Example: \"My name is Varshit Madisetti and I am applying for the Frontend Developer position. I bring 1.5 years of production experience in Angular, TypeScript, and REST APIs.\"\n\nPARAGRAPH 2 — Strongest match (2–3 sentences):\n  Name 2–3 specific matched skills from the ATS result and briefly connect them to actual experience.\n  Reference at least one real role or project from the resume.\n  Do NOT mention skills not in the resume.\n\nPARAGRAPH 3 — Call to action (1 sentence):\n  Request a conversation or interview.\n  Example: \"I would welcome the opportunity to discuss how my background aligns with your team's needs.\"\n\nSIGN-OFF (mandatory):\n  Format:\n  Best regards,\n  [Candidate Full Name]\n  [Candidate Email if available]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nLENGTH AND TONE RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Body word count (excluding subject line and sign-off): 60–100 words. Count carefully.\n- Tone: professional, direct. Zero fluff.\n- Do NOT use \"I hope this email finds you well\" or any similar filler opening.\n- Do NOT use \"Please find attached my resume\" — this email is the outreach.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTRICT PROHIBITIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Do NOT invent job titles, companies, skills, or metrics not in the resume.\n- Do NOT omit the Subject: line — it is mandatory.\n- Do NOT use markdown formatting — plain text only.\n- Do NOT produce JSON.\n- Do NOT exceed 100 body words.\n- Banned phrases: \"I hope this finds you well\", \"Please find attached\", \"I am writing to express my interest\", \"I am passionate about\", \"I would be a great addition\".",
+        "batching": {}
+      },
+      "id": "0faa5d36-fc4c-47da-99ce-242b768b6110",
+      "name": "Recruiter Email Generator",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3088,
+        1024
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3.1",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "b1f07efd-8a86-4f5f-9640-c69d70de768c",
+      "name": "OpenAI Model - Email",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3168,
+        1248
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "x5QkreDilHObB97X",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "recruiter_email",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5386e1e-8aee-4815-b920-5020dcc6ed38",
+      "name": "Map Recruiter Email Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3440,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "job",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.job }}",
+              "type": "json"
+            },
+            {
+              "id": "2",
+              "name": "resume",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.resume }}",
+              "type": "json"
+            },
+            {
+              "id": "3",
+              "name": "ats_score",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.ats.final_score }}",
+              "type": "number"
+            },
+            {
+              "id": "4",
+              "name": "ats_breakdown",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.ats.breakdown }}",
+              "type": "object"
+            },
+            {
+              "id": "5",
+              "name": "matched_skills",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.ats.matched_skills || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "6",
+              "name": "missing_skills",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.ats.missing_skills || [] }}",
+              "type": "array"
+            },
+            {
+              "id": "7",
+              "name": "ats_confidence",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.ats.confidence }}",
+              "type": "number"
+            },
+            {
+              "id": "8",
+              "name": "suggestions",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.suggestions }}",
+              "type": "array"
+            },
+            {
+              "id": "9",
+              "name": "accepted_suggestions",
+              "value": "={{ $json.accepted_suggestions }}",
+              "type": "array"
+            },
+            {
+              "id": "10",
+              "name": "rejected_suggestions",
+              "value": "={{ $json.rejected_suggestions }}",
+              "type": "array"
+            },
+            {
+              "id": "11",
+              "name": "memory_context",
+              "value": "={{ $json.memory_context }}",
+              "type": "json"
+            },
+            {
+              "id": "12",
+              "name": "cover_letter",
+              "value": "={{ $json.cover_letter }}",
+              "type": "string"
+            },
+            {
+              "id": "13",
+              "name": "recruiter_email",
+              "value": "={{ $json.recruiter_email }}",
+              "type": "string"
+            },
+            {
+              "id": "14",
+              "name": "job_role",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.job.role }}",
+              "type": "string"
+            },
+            {
+              "id": "15",
+              "name": "candidate_name",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.resume.name }}",
+              "type": "string"
+            },
+            {
+              "id": "16",
+              "name": "verdict",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.verdict }}",
+              "type": "string"
+            },
+            {
+              "id": "17",
+              "name": "verdictReason",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.verdictReason }}",
+              "type": "string"
+            },
+            {
+              "id": "18",
+              "name": "deterministic",
+              "value": "={{ $node[\"Prepare Generation Payload\"].json.deterministic }}",
+              "type": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dcd4fc96-4844-4ea9-bdf5-13925cab19c3",
+      "name": "Prepare Review Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3888,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an ATS-Optimized Resume Generator. Your sole function is to rewrite and restructure the provided resume data into an optimized resume JSON. You do not add new content. You do not give advice.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT FORMAT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nReturn ONLY a single raw JSON object.\nNo markdown. No code fences. No prose. No explanations.\nThe very first character of your output must be { and the very last must be }.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREQUIRED SCHEMA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"header\": \"string\",\n  \"summary\": \"string\",\n  \"skills\": [\"string\"],\n  \"experience\": [\"string\"],\n  \"projects\": [\"string\"],\n  \"education\": [\"string\"]\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSOURCE DATA (the ONLY content you may use)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTarget Job:\n{{ JSON.stringify($json.job, null, 2) }}\n\nOriginal Resume (source of truth — all content must originate here):\n{{ JSON.stringify($json.resume, null, 2) }}\n\nApproved Suggestions (rewriting/reordering instructions only — NOT permission to add new content):\n{{ JSON.stringify($json.accepted_suggestions, null, 2) }}\n\nUser Memory Context (apply past preferences silently — e.g. concise summaries, frontend-first skill ordering):\n{{ JSON.stringify($json.memory_context, null, 2) }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFIELD-BY-FIELD GENERATION RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nheader\n  → Format: \"Full Name | Email | Phone | Location | LinkedIn\"\n  → Only include fields present in the original resume. Omit fields that are not present.\n  → Use \" | \" as separator.\n  → Example: \"Varshit Madisetti | varshit@email.com | +49 155 1234 | Darmstadt, Germany | linkedin.com/in/varshitmadisetti\"\n\nsummary\n  → 2–4 sentences. Maximum 60 words.\n  → Write in third person or first person depending on the original resume's style.\n  → Must mention: years of experience, primary technology stack, and the type of work done.\n  → Base ONLY on the original resume's summary and experience sections.\n  → Apply memory preferences (e.g. if past_preferences suggest concise summaries, keep it 2 sentences).\n  → Do NOT mention skills the candidate does not have.\n  → Do NOT use \"passionate\", \"dynamic\", \"results-driven\", or other filler adjectives.\n\nskills (array of strings)\n  → List individual skills as short strings (e.g. \"TypeScript\", \"Angular\", \"REST APIs\").\n  → Ordering rule: matched_skills from the job first, then remaining resume skills.\n  → Apply any accepted suggestion that instructs reordering.\n  → Deduplicate: if the same skill appears twice under different names, keep the canonical form.\n  → Include ONLY skills present in the original resume's skills section.\n  → Maximum 20 skills.\n\nexperience (array of strings)\n  → Each entry is a single formatted string for one role.\n  → Format each string as:\n    \"[Job Title] · [Company] · [Start]–[End]\\n[bullet1]\\n[bullet2]\\n[bullet3]\"\n  → Write 2–4 bullet points per role.\n  → BULLET POINT RULES (strict):\n    - Start with a strong action verb from this list ONLY:\n      Built, Developed, Designed, Implemented, Engineered, Delivered, Optimised, Refactored, Integrated, Automated, Reduced, Improved, Led, Mentored, Deployed, Migrated, Architected, Tested, Debugged, Configured\n    - Follow this pattern: [Action Verb] + [specific technology/tool] + [what was achieved or delivered]\n    - Include a measurable outcome ONLY if one is explicitly stated in the original resume.\n    - Do NOT invent percentages, numbers, team sizes, or timelines.\n    - Do NOT use passive voice (\"was responsible for\", \"helped with\").\n    - REWRITE existing bullet points to be more impactful — do NOT copy them verbatim unless they already follow the pattern above.\n  → Apply accepted suggestions that instruct rewording of specific roles.\n  → If a role has no description in the original resume, write 1 bullet summarising the title and company only.\n  → If experience array is empty in original resume: return [].\n\nprojects (array of strings)\n  → Each entry is a single formatted string for one project.\n  → Format: \"[Project Name] — [tech1, tech2, tech3]\\n[1–2 sentence description]\"\n  → Description must use original resume language — do not fabricate new achievements.\n  → Apply any accepted suggestion that instructs adding project emphasis.\n  → If projects array is empty in original resume: return []. Do NOT create projects.\n\neducation (array of strings)\n  → Each entry is a single formatted string.\n  → Format: \"[Degree] · [Institution] · [Year]\"\n  → Example: \"B.E. Computer Science & Engineering · Osmania University · 2021–2025 | GPA: 8.26/10\"\n  → Include GPA only if present in original resume.\n  → If education array is empty in original resume: return [].\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAPPLYING ACCEPTED SUGGESTIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEach accepted suggestion instructs you to REWRITE or REORDER existing content only.\nRead each suggestion and apply it if and only if the relevant content exists in the original resume.\n\nRules:\n  → \"Add [SKILL]\" suggestion: SKIP if that skill is not in the original resume's skills list.\n  → \"Reorder skills\" suggestion: apply the reordering — do not add new skills.\n  → \"Rewrite [ROLE] bullets\" suggestion: rewrite that role's bullets using the action verb pattern.\n  → \"Add [KEYWORD] to experience\" suggestion: only if that experience already mentions the concept.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTRICT ANTI-HALLUCINATION RULES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n1. Every piece of content in the output must be traceable to the original resume data above.\n2. Do NOT invent job titles, companies, dates, skills, projects, degrees, or institutions.\n3. Do NOT invent metrics (percentages, dollar amounts, user counts, team sizes) unless they appear verbatim in the original resume.\n4. Do NOT add a skill to the skills array that is not in the original resume's skills list.\n5. Do NOT create a project entry that is not in the original resume's projects list.\n6. Do NOT create an experience entry that is not in the original resume's experience list.\n7. If an accepted suggestion requires content that does not exist in the resume, silently skip that suggestion.\n8. Do NOT use null for any field — use \"\" for empty strings and [] for empty arrays.\n9. Do NOT add commentary, notes, or warnings inside the JSON.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "23e72edd-801c-4627-a041-e825f42f190e",
+      "name": "Final Resume Generator",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        4112,
+        496
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-chat-v3.1",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-chat-v3.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "eefe0d4b-3f83-45b5-b7d9-466d79bf3316",
+      "name": "OpenAI Model - Resume Generator",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4112,
+        720
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "x5QkreDilHObB97X",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"header\":\"Varshit Madisetti | varshit@email.com\",\"summary\":\"Experienced Frontend Developer...\",\"skills\":[\"React\",\"TypeScript\",\"REST APIs\"],\"experience\":[],\"projects\":[],\"education\":[]}"
+      },
+      "id": "981f8d98-dda5-408a-bda5-bfa3f1152b36",
+      "name": "Final Resume Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4256,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// BR-7: Resume Validation Layer\n// Hard error on critical missing sections; soft warning for optional ones.\nconst item = $input.first().json;\nconst resume = item.output || {};\n\nconst warnings      = [];\nconst criticalErrors = [];\n\nif (!resume.summary || String(resume.summary).trim() === '') {\n  warnings.push('Missing Summary section.');\n}\nif (!resume.skills || resume.skills.length === 0) {\n  criticalErrors.push('Missing Skills section — resume is not usable without skills.');\n}\nif (!resume.experience || resume.experience.length === 0) {\n  criticalErrors.push('Missing Experience section — resume is not usable without experience.');\n}\nif (!resume.education || resume.education.length === 0) {\n  warnings.push('Missing Education section.');\n}\nif (!resume.projects || resume.projects.length === 0) {\n  warnings.push('Missing Projects section (optional but recommended).');\n}\n\nif (criticalErrors.length > 0) {\n  throw new Error(\n    'Resume Validation FAILED (critical): ' + criticalErrors.join(' | ') +\n    (warnings.length > 0 ? ' | Warnings: ' + warnings.join(' | ') : '')\n  );\n}\n\nreturn [{\n  json: {\n    ...item,\n    resume_validation: {\n      passed:          warnings.length === 0,\n      warnings,\n      critical_errors: criticalErrors\n    }\n  }\n}];"
+      },
+      "id": "450a2eec-52d6-46c0-a1bc-060b38a7d3fe",
+      "name": "Resume Validator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4464,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "user_id",
+              "value": "={{ $node[\"Load User Memory\"].json._resolved_user_id || ($node[\"Prepare Review Data\"].json.candidate_name || 'unknown_user').toLowerCase().replace(/\\s+/g, '_').replace(/[^a-z0-9_]/g, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "accepted_suggestions",
+              "value": "={{ JSON.stringify($node[\"Prepare Review Data\"].json.accepted_suggestions || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "rejected_suggestions",
+              "value": "={{ JSON.stringify($node[\"Prepare Review Data\"].json.rejected_suggestions || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "ats_score",
+              "value": "={{ $node[\"Prepare Review Data\"].json.ats_score }}",
+              "type": "number"
+            },
+            {
+              "id": "5",
+              "name": "ats_confidence",
+              "value": "={{ $node[\"Prepare Review Data\"].json.ats_confidence }}",
+              "type": "number"
+            },
+            {
+              "id": "6",
+              "name": "job_role",
+              "value": "={{ $node[\"Prepare Review Data\"].json.job_role }}",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "verdict",
+              "value": "={{ $node[\"Prepare Review Data\"].json.verdict }}",
+              "type": "string"
+            },
+            {
+              "id": "8",
+              "name": "resume_version",
+              "value": "={{ $node[\"Prepare Review Data\"].json.memory_context.resume_version ?? 1 }}",
+              "type": "number"
+            },
+            {
+              "id": "9",
+              "name": "preference_scores",
+              "value": "={{ $node[\"Prepare Review Data\"].json.memory_context.preference_scores ?? {} }}",
+              "type": "object"
+            },
+            {
+              "id": "10",
+              "name": "resume_validation_warnings",
+              "value": "={{ JSON.stringify($json.resume_validation.warnings || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "11",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "48efdf62-ddcd-4c1c-8f56-1c59dbeb41c7",
+      "name": "Prepare Memory Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4688,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FIX (Issue 3): Consolidated storage — user_preferences written to staticData ONLY.\n// The user_preferences DataTable CREATE node has been removed.\n// application_summary and audit_log continue to use DataTable (correct — separate concern).\n//\n// FIX (Issue 1): user_id comes from _resolved_user_id (email-first, name-fallback).\n// Memory growth cap: max 1000 records, oldest removed when exceeded.\n\nconst staticData = $getWorkflowStaticData('global');\n\nif (!staticData.user_preferences) {\n  staticData.user_preferences = [];\n}\n\nconst record = {\n  user_id:                    $input.item.json.user_id,\n  accepted_suggestions:       $input.item.json.accepted_suggestions,\n  rejected_suggestions:       $input.item.json.rejected_suggestions,\n  ats_score:                  $input.item.json.ats_score,\n  ats_confidence:             $input.item.json.ats_confidence,\n  job_role:                   $input.item.json.job_role,\n  verdict:                    $input.item.json.verdict,\n  resume_version:             $input.item.json.resume_version,\n  preference_scores:          $input.item.json.preference_scores,\n  resume_validation_warnings: $input.item.json.resume_validation_warnings,\n  timestamp:                  $input.item.json.timestamp\n};\n\nstaticData.user_preferences.push(record);\n\nconst MAX_RECORDS = 1000;\nwhile (staticData.user_preferences.length > MAX_RECORDS) {\n  staticData.user_preferences.shift();\n}\n\nreturn [{\n  json: {\n    status:        'Memory saved',\n    total_records: staticData.user_preferences.length,\n    latest:        record\n  }\n}];"
+      },
+      "id": "e32cb6a3-fb42-4815-8ef0-ab2702ca002b",
+      "name": "Store User Preferences",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4912,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "job_role",
+              "value": "={{ $node[\"Prepare Review Data\"].json.job_role }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "ats_score",
+              "value": "={{ $node[\"Prepare Review Data\"].json.ats_score }}",
+              "type": "number"
+            },
+            {
+              "id": "3",
+              "name": "ats_confidence",
+              "value": "={{ $node[\"Prepare Review Data\"].json.ats_confidence }}",
+              "type": "number"
+            },
+            {
+              "id": "4",
+              "name": "verdict",
+              "value": "={{ $node[\"Prepare Review Data\"].json.verdict }}",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "verdict_reason",
+              "value": "={{ $node[\"Prepare Review Data\"].json.verdictReason }}",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "missing_skills",
+              "value": "={{ JSON.stringify($node[\"Prepare Review Data\"].json.missing_skills || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "matched_skills",
+              "value": "={{ JSON.stringify($node[\"Prepare Review Data\"].json.matched_skills || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "8",
+              "name": "resume_version",
+              "value": "={{ $node[\"Prepare Review Data\"].json.memory_context.resume_version ?? 1 }}",
+              "type": "number"
+            },
+            {
+              "id": "9",
+              "name": "resume_validation_passed",
+              "value": "={{ $json.resume_validation.passed }}",
+              "type": "boolean"
+            },
+            {
+              "id": "10",
+              "name": "resume_validation_warnings",
+              "value": "={{ JSON.stringify($json.resume_validation.warnings || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "11",
+              "name": "candidate_name",
+              "value": "={{ $node[\"Prepare Review Data\"].json.candidate_name }}",
+              "type": "string"
+            },
+            {
+              "id": "12",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3283b982-b660-464d-b98d-59e27e623f0e",
+      "name": "Prepare Application Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4688,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "application_summary",
+        "columns": {
+          "column": [
+            {
+              "name": "candidate_name"
+            },
+            {
+              "name": "job_role"
+            },
+            {
+              "name": "ats_score",
+              "type": "number"
+            },
+            {
+              "name": "ats_confidence",
+              "type": "number"
+            },
+            {
+              "name": "verdict"
+            },
+            {
+              "name": "verdict_reason"
+            },
+            {
+              "name": "missing_skills"
+            },
+            {
+              "name": "matched_skills"
+            },
+            {
+              "name": "resume_version",
+              "type": "number"
+            },
+            {
+              "name": "resume_validation_passed",
+              "type": "boolean"
+            },
+            {
+              "name": "resume_validation_warnings"
+            },
+            {
+              "name": "timestamp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        4688,
+        1232
+      ],
+      "id": "2106ff75-24f3-4923-9733-debf2c7d5965",
+      "name": "application_summary"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "application_summary"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "candidate_name": "={{ $json.candidate_name }}",
+            "job_role": "={{ $json.job_role }}",
+            "ats_score": "={{ $json.ats_score }}",
+            "ats_confidence": "={{ $json.ats_confidence }}",
+            "verdict": "={{ $json.verdict }}",
+            "verdict_reason": "={{ $json.verdict_reason }}",
+            "missing_skills": "={{ $json.missing_skills }}",
+            "matched_skills": "={{ $json.matched_skills }}",
+            "resume_version": "={{ $json.resume_version }}",
+            "resume_validation_passed": "={{ $json.resume_validation_passed }}",
+            "resume_validation_warnings": "={{ $json.resume_validation_warnings }}",
+            "timestamp": "={{ $json.timestamp }}"
+          },
+          "schema": [
+            {
+              "id": "candidate_name",
+              "displayName": "candidate_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "ats_score",
+              "displayName": "ats_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "ats_confidence",
+              "displayName": "ats_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "verdict",
+              "displayName": "verdict",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "verdict_reason",
+              "displayName": "verdict_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "missing_skills",
+              "displayName": "missing_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "matched_skills",
+              "displayName": "matched_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "resume_version",
+              "displayName": "resume_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "resume_validation_passed",
+              "displayName": "resume_validation_passed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "resume_validation_warnings",
+              "displayName": "resume_validation_warnings",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dcf99fac-df67-4145-940d-2d7c58370c13",
+      "name": "Store Application Summary",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        4912,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "event_type",
+              "value": "workflow_complete",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "user_id",
+              "value": "={{ $node[\"Load User Memory\"].json._resolved_user_id || ($node[\"Prepare Review Data\"].json.candidate_name || 'unknown_user').toLowerCase().replace(/\\s+/g, '_').replace(/[^a-z0-9_]/g, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "job_role",
+              "value": "={{ $node[\"Prepare Review Data\"].json.job_role }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "ats_score",
+              "value": "={{ $node[\"Prepare Review Data\"].json.ats_score }}",
+              "type": "number"
+            },
+            {
+              "id": "5",
+              "name": "verdict",
+              "value": "={{ $node[\"Prepare Review Data\"].json.verdict }}",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "resume_version",
+              "value": "={{ $node[\"Prepare Review Data\"].json.memory_context.resume_version ?? 1 }}",
+              "type": "number"
+            },
+            {
+              "id": "7",
+              "name": "accepted_count",
+              "value": "={{ ($node[\"Prepare Review Data\"].json.accepted_suggestions || []).length }}",
+              "type": "number"
+            },
+            {
+              "id": "8",
+              "name": "rejected_count",
+              "value": "={{ ($node[\"Prepare Review Data\"].json.rejected_suggestions || []).length }}",
+              "type": "number"
+            },
+            {
+              "id": "9",
+              "name": "resume_validation_passed",
+              "value": "={{ $json.resume_validation.passed }}",
+              "type": "boolean"
+            },
+            {
+              "id": "10",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "04e86bfe-71af-4ecb-a6b8-752b8d496197",
+      "name": "Prepare Audit Log",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4688,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "audit_log",
+        "columns": {
+          "column": [
+            {
+              "name": "event_type"
+            },
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "job_role"
+            },
+            {
+              "name": "ats_score",
+              "type": "number"
+            },
+            {
+              "name": "verdict"
+            },
+            {
+              "name": "resume_version",
+              "type": "number"
+            },
+            {
+              "name": "accepted_count",
+              "type": "number"
+            },
+            {
+              "name": "rejected_count",
+              "type": "number"
+            },
+            {
+              "name": "resume_validation_passed",
+              "type": "boolean"
+            },
+            {
+              "name": "timestamp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        4688,
+        1040
+      ],
+      "id": "0581c702-2bcd-4182-b7d7-dd79ba796198",
+      "name": "audit_log"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "audit_log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_type": "={{ $json.event_type }}",
+            "user_id": "={{ $json.user_id }}",
+            "job_role": "={{ $json.job_role }}",
+            "ats_score": "={{ $json.ats_score }}",
+            "verdict": "={{ $json.verdict }}",
+            "resume_version": "={{ $json.resume_version }}",
+            "accepted_count": "={{ $json.accepted_count }}",
+            "rejected_count": "={{ $json.rejected_count }}",
+            "resume_validation_passed": "={{ $json.resume_validation_passed }}",
+            "timestamp": "={{ $json.timestamp }}"
+          },
+          "schema": [
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "ats_score",
+              "displayName": "ats_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "verdict",
+              "displayName": "verdict",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "resume_version",
+              "displayName": "resume_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "accepted_count",
+              "displayName": "accepted_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "rejected_count",
+              "displayName": "rejected_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "resume_validation_passed",
+              "displayName": "resume_validation_passed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "35d64f4e-b00e-499a-a8b1-a794cf680932",
+      "name": "Store Audit Log",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        4912,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Resume HTML for PDF output\nconst item = $input.first().json;\nconst r = item.output || {};\nconst reviewData = $node['Prepare Review Data'].json;\n\nconst esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\n\nconst skillsList = (r.skills || []).map(s =>\n  `<span style=\"display:inline-block;background:#f0f4ff;border:1px solid #c7d2fe;border-radius:4px;padding:2px 10px;margin:2px 4px 2px 0;font-size:12px;color:#3730a3;\">${esc(s)}</span>`\n).join('');\n\nconst expItems = (r.experience || []).map(exp => {\n  if (typeof exp === 'string') return `<li style=\"margin-bottom:6px;\">${esc(exp)}</li>`;\n  return `<li style=\"margin-bottom:10px;\"><strong>${esc(exp.title || '')}</strong> · ${esc(exp.company || '')} <span style=\"color:#6b7280;font-size:12px;\">${esc(exp.start || '')}–${esc(exp.end || 'Present')}</span><br/><span style=\"font-size:13px;color:#374151;\">${esc(exp.description || '')}</span></li>`;\n}).join('');\n\nconst projItems = (r.projects || []).map(p =>\n  `<li style=\"margin-bottom:6px;\">${esc(typeof p === 'string' ? p : JSON.stringify(p))}</li>`\n).join('');\nconst eduItems = (r.education || []).map(e =>\n  `<li style=\"margin-bottom:6px;\">${esc(typeof e === 'string' ? e : JSON.stringify(e))}</li>`\n).join('');\n\nconst html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"/><title>Resume — ${esc(reviewData.candidate_name)}</title></head>\n<body style=\"font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#111;line-height:1.6;\">\n  <div style=\"border-bottom:3px solid #4f46e5;padding-bottom:12px;margin-bottom:24px;\">\n    <h1 style=\"margin:0;font-size:26px;color:#1e1b4b;\">${esc(r.header || reviewData.candidate_name)}</h1>\n    <p style=\"margin:4px 0 0;font-size:13px;color:#6b7280;\">ATS Score: ${reviewData.ats_score || 'N/A'} · Role: ${esc(reviewData.job_role)} · Version: ${reviewData.memory_context && reviewData.memory_context.resume_version ? reviewData.memory_context.resume_version : 1}</p>\n  </div>\n  ${r.summary ? `<section style=\"margin-bottom:20px;\"><h2 style=\"font-size:15px;color:#4f46e5;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;\">SUMMARY</h2><p style=\"margin:0;font-size:13px;\">${esc(r.summary)}</p></section>` : ''}\n  ${skillsList ? `<section style=\"margin-bottom:20px;\"><h2 style=\"font-size:15px;color:#4f46e5;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;\">SKILLS</h2><div>${skillsList}</div></section>` : ''}\n  ${expItems ? `<section style=\"margin-bottom:20px;\"><h2 style=\"font-size:15px;color:#4f46e5;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;\">EXPERIENCE</h2><ul style=\"padding-left:16px;margin:0;\">${expItems}</ul></section>` : ''}\n  ${projItems ? `<section style=\"margin-bottom:20px;\"><h2 style=\"font-size:15px;color:#4f46e5;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;\">PROJECTS</h2><ul style=\"padding-left:16px;margin:0;\">${projItems}</ul></section>` : ''}\n  ${eduItems ? `<section style=\"margin-bottom:20px;\"><h2 style=\"font-size:15px;color:#4f46e5;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;\">EDUCATION</h2><ul style=\"padding-left:16px;margin:0;\">${eduItems}</ul></section>` : ''}\n</body>\n</html>`;\n\nreturn [{ json: { html_resume: html, candidate_name: reviewData.candidate_name } }];"
+      },
+      "id": "8c1dd09a-4ed3-4994-9bc5-cb262f891d85",
+      "name": "Build Resume HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4688,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Cover Letter HTML for PDF output\nconst item = $input.first().json;\nconst reviewData = $node['Prepare Review Data'].json;\nconst coverLetter = reviewData.cover_letter || '';\n\nconst esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\nconst bodyHtml = esc(coverLetter).replace(/\\n/g, '<br/>');\n\nconst html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"/><title>Cover Letter — ${esc(reviewData.candidate_name)}</title></head>\n<body style=\"font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#111;line-height:1.8;\">\n  <div style=\"border-bottom:3px solid #4f46e5;padding-bottom:12px;margin-bottom:32px;\">\n    <h1 style=\"margin:0;font-size:22px;color:#1e1b4b;\">Cover Letter</h1>\n    <p style=\"margin:4px 0 0;font-size:13px;color:#6b7280;\">${esc(reviewData.candidate_name)} · ${esc(reviewData.job_role)}</p>\n  </div>\n  <div style=\"font-size:14px;color:#1f2937;\">${bodyHtml}</div>\n</body>\n</html>`;\n\nreturn [{ json: { html_cover_letter: html, candidate_name: reviewData.candidate_name } }];"
+      },
+      "id": "35e38a48-bf41-4e3c-8621-3cd5226357d3",
+      "name": "Build Cover Letter HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4688,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "html_resume",
+        "binaryPropertyName": "=",
+        "options": {}
+      },
+      "id": "4f77b7b8-c8e7-456c-83f5-d19f054958ed",
+      "name": "Resume to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        4912,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "html_cover_letter",
+        "options": {}
+      },
+      "id": "2f0dfea9-cec6-4d1b-a8bb-c042927a1b24",
+      "name": "Cover Letter to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        4912,
+        1072
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "$binary",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1568,
+        688
+      ],
+      "id": "8ffc2a3b-10a5-4ebc-8c53-57270e6627e8",
+      "name": "Split Out",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ Object.keys($binary)[0] === 'jobFile' ? 0 : 1 }}"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1264,
+        688
+      ],
+      "id": "63e96836-7777-4d71-afd1-f029e8d7d411",
+      "name": "Switch"
+    }
+  ],
+  "connections": {
+    "Start Application": {
+      "main": [
+        [
+          {
+            "node": "Validate Input Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input Files": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Job File Type": {
+      "main": [
+        [
+          {
+            "node": "Extract Job Description",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route Job DOCX Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Resume File Type": {
+      "main": [
+        [
+          {
+            "node": "Extract Resume",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route Resume DOCX Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job Description": {
+      "main": [
+        [
+          {
+            "node": "Normalize Job Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Resume": {
+      "main": [
+        [
+          {
+            "node": "Normalize Resume Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Job DOCX Type": {
+      "main": [
+        [
+          {
+            "node": "Extract Job DOCX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Job TXT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Resume DOCX Type": {
+      "main": [
+        [
+          {
+            "node": "Extract Resume DOCX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Resume TXT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job DOCX": {
+      "main": [
+        [
+          {
+            "node": "Normalize Job Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job TXT": {
+      "main": [
+        [
+          {
+            "node": "Normalize Job Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Resume DOCX": {
+      "main": [
+        [
+          {
+            "node": "Normalize Resume Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Resume TXT": {
+      "main": [
+        [
+          {
+            "node": "Normalize Resume Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Job Text": {
+      "main": [
+        [
+          {
+            "node": "Job Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Resume Text": {
+      "main": [
+        [
+          {
+            "node": "Resume Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Guard Job Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Job Analyzer": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Job Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Structure Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Job Analyzer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard Job Output": {
+      "main": [
+        [
+          {
+            "node": "Combine Job & Resume Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Guard Resume Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Resume Analyzer": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resume Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume Structure Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Resume Analyzer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard Resume Output": {
+      "main": [
+        [
+          {
+            "node": "Combine Job & Resume Analysis",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Job & Resume Analysis": {
+      "main": [
+        [
+          {
+            "node": "Skill & Experience Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skill & Experience Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Prepare Analysis Payload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ATS Matching Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Analysis Payload": {
+      "main": [
+        [
+          {
+            "node": "Merge Analysis + Suggestions",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ATS Matching Engine": {
+      "main": [
+        [
+          {
+            "node": "Application Recommendation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - ATS Matcher": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ATS Matching Engine",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ATS Score Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "ATS Matching Engine",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Application Recommendation": {
+      "main": [
+        [
+          {
+            "node": "Enrich ATS Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich ATS Context": {
+      "main": [
+        [
+          {
+            "node": "Suggestions Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suggestions Engine": {
+      "main": [
+        [
+          {
+            "node": "Merge Analysis + Suggestions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Suggestions": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Suggestions Engine",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suggestions Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Suggestions Engine",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Analysis + Suggestions": {
+      "main": [
+        [
+          {
+            "node": "Prepare Generation Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Generation Payload": {
+      "main": [
+        [
+          {
+            "node": "Load User Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load User Memory": {
+      "main": [
+        [
+          {
+            "node": "Smart Review Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Smart Review Processor": {
+      "main": [
+        [
+          {
+            "node": "Merge Content Outputs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Cover Letter Generator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Recruiter Email Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Content Outputs": {
+      "main": [
+        [
+          {
+            "node": "Prepare Review Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cover Letter Generator": {
+      "main": [
+        [
+          {
+            "node": "Map Cover Letter Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Cover Letter": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Cover Letter Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Cover Letter Output": {
+      "main": [
+        [
+          {
+            "node": "Merge Content Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Recruiter Email Generator": {
+      "main": [
+        [
+          {
+            "node": "Map Recruiter Email Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Email": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recruiter Email Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Recruiter Email Output": {
+      "main": [
+        [
+          {
+            "node": "Merge Content Outputs",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Prepare Review Data": {
+      "main": [
+        [
+          {
+            "node": "Final Resume Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Resume Generator": {
+      "main": [
+        [
+          {
+            "node": "Resume Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Resume Generator": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Resume Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Resume Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Final Resume Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume Validator": {
+      "main": [
+        [
+          {
+            "node": "Prepare Memory Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Application Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Audit Log",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Resume HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Cover Letter HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Memory Data": {
+      "main": [
+        [
+          {
+            "node": "Store User Preferences",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Application Summary": {
+      "main": [
+        [
+          {
+            "node": "Store Application Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "application_summary": {
+      "main": [
+        [
+          {
+            "node": "Store Application Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Audit Log": {
+      "main": [
+        [
+          {
+            "node": "Store Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "audit_log": {
+      "main": [
+        [
+          {
+            "node": "Store Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Resume HTML": {
+      "main": [
+        [
+          {
+            "node": "Resume to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Cover Letter HTML": {
+      "main": [
+        [
+          {
+            "node": "Cover Letter to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Route Job File Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route Resume File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "dcd46b06234145d0006db019d695ea75e42dd17cd00ec6d4aad137595ab21625"
+  }
+}
